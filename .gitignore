@@ -1,0 +1,18 @@
+# Ignore data folder
+data/
+# Ignore Python bytecode
+**pycache**/
+*.pyc
+# Ignore model checkpoints
+checkpoints/
+*.h5
+*.ckpt
+# Ignore large intermediate files
+logs/
+*.npy
+*.npz
+*.csv
+# Ignore system files
+.DS_Store
+# Ignore zip
+*.zip
