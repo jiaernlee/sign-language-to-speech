@@ -56,11 +56,16 @@ def speak_text_with_gtts(text):
 # Streamlit UI
 st.title("Sign Language Recognition with TTS")
 
+# Initialize session states
 if "detected_text" not in st.session_state:
     st.session_state["detected_text"] = ""
 
 if "run_webcam" not in st.session_state:
     st.session_state["run_webcam"] = False
+
+if "session_confidence" not in st.session_state:
+    st.session_state["session_confidence"] = {label: 0.0 for label in class_labels.values()}
+    st.session_state["class_counts"] = {label: 0 for label in class_labels.values()}
 
 # Columns for layout
 col1, col2 = st.columns([2, 1])
@@ -92,7 +97,26 @@ with col2:
         else:
             st.warning("No text to speak!")
 
-# Webcam Processing
+# Confidence level graph 
+st.subheader("Average Confidence Levels")
+
+# Calculate average confidence 
+average_confidence = {
+        label: (st.session_state["session_confidence"][label] / st.session_state["class_counts"][label])
+        if st.session_state["class_counts"][label] > 0 else 0
+        for label in class_labels.values()
+    }
+
+# Filter out classes with zero predictions
+average_confidence_filtered = {label: score for label, score in average_confidence.items() if score > 0}
+
+# Visualize confidence levels as a bar chart
+if average_confidence_filtered:
+    st.bar_chart(average_confidence_filtered)
+else:
+    st.write("No predictions made yet.")
+
+# Webcam Processing Section
 if st.session_state["run_webcam"]:
     cap = cv2.VideoCapture(0)
 
@@ -108,8 +132,8 @@ if st.session_state["run_webcam"]:
 
         # Process hand landmarks with Mediapipe
         results = hands.process(rgb_frame)
-        prediction = "" 
-        confidence = ""
+        prediction = ""
+        confidence = 0.0
 
         if results.multi_hand_landmarks:
             for hand_landmarks in results.multi_hand_landmarks:
@@ -131,30 +155,33 @@ if st.session_state["run_webcam"]:
                 hand_region = frame[y_min:y_max, x_min:x_max]
                 if hand_region.size > 0:
                     preprocessed_hand = preprocess_hand_region(hand_region)
-    
-                    # Use model from session state for predictions
-                if st.session_state.model is not None:
-                    predictions = st.session_state.model.predict(preprocessed_hand, verbose=0)
-                    predicted_class = np.argmax(predictions)
-                    confidence = predictions[0][predicted_class]
-                    
-                    if confidence >= 0.8: 
-                        prediction = class_labels[predicted_class]
-                        
-                        # Append prediction to detected text
-                        if prediction == "space":
-                            st.session_state["detected_text"] += " "
-                        elif prediction == "del":
-                            st.session_state["detected_text"] = st.session_state["detected_text"][:-1]
-                        elif prediction != "nothing":
-                            st.session_state["detected_text"] += prediction
 
+                    # Use model from session state for predictions
+                    if st.session_state.model is not None:
+                        predictions = st.session_state.model.predict(preprocessed_hand, verbose=0)
+                        predicted_class = np.argmax(predictions)
+                        confidence = predictions[0][predicted_class]
+
+                        # only show when confidence is more than 0.8
+                        if confidence >= 0.8:
+                            prediction = class_labels[predicted_class]
+
+                            st.session_state["session_confidence"][prediction] += confidence
+                            st.session_state["class_counts"][prediction] += 1
+
+                            # Append prediction to detected text
+                            if prediction == "space":
+                                st.session_state["detected_text"] += " "
+                            elif prediction == "del":
+                                st.session_state["detected_text"] = st.session_state["detected_text"][:-1]
+                            elif prediction != "nothing":
+                                st.session_state["detected_text"] += prediction
 
         # Display prediction on the frame
         cv2.putText(frame, f"Prediction: {prediction}", (10, 50),
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
-        # cv2.putText(frame, f"Confidence: {confidence}", (10, 100),
-        #             cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+        cv2.putText(frame, f"Confidence: {confidence:.2f}", (10, 100),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
 
         # Stream the frame in the Streamlit app
         frame_window.image(frame, channels="BGR")

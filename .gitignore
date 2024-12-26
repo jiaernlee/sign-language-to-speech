@@ -3,10 +3,9 @@ data/
 # Ignore Python bytecode
 **pycache**/
 *.pyc
-# Ignore model checkpoints
 checkpoints/
-*.h5
-*.ckpt
+checkpoints/*.h5
+checkpoints/*.ckpt
 # Ignore large intermediate files
 logs/
 *.npy
