@@ -31,7 +31,9 @@ pip install -r requirements.txt
 ```bash 
 streamlit run app.py
 ```
- 2. **Using the webcam **: 
+ 2. **Navigation** :
+Navigate through the sidebar to learn more about the project and experience the functionality.  
+ 3. **Using the webcam**: 
 -   Start the webcam using the "Start Webcam" button.
 -   Perform ASL gestures in front of the camera.
 -   View the recognized text in the "Detected Text" section.
