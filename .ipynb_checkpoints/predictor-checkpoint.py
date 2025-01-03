@@ -150,13 +150,20 @@ def prediction_page():
                     y_max = int(max([lm.y for lm in hand_landmarks.landmark]) * h)
     
                     # Add padding to bounding box
-                    padding = 20
+                    padding = 50
                     x_min, y_min = max(0, x_min - padding), max(0, y_min - padding)
                     x_max, y_max = min(w, x_max + padding), min(h, y_max + padding)
     
                     hand_region = frame[y_min:y_max, x_min:x_max]
                     if hand_region.size > 0:
                         preprocessed_hand = preprocess_hand_region(hand_region)
+
+                        # st.image(
+                        #     preprocessed_hand[0],
+                        #     caption="Image Passed to Model",
+                        #     use_column_width=True,
+                        #     clamp=True  
+                        # )
     
                         # Use model from session state for predictions
                         if st.session_state.model is not None:
