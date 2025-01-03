@@ -24,14 +24,16 @@ pip install -r requirements.txt
 -   Place the testing dataset in `data/asl_alphabet_test/`.
 
 4.  **Ensure you have a trained model** :
--   Use the pre-trained model (`models/sign_language_model.h5`) provided, or train your own.
+-   Use the pre-trained model (`sign_language_model.h5`) provided, or train your own.
 
 ## Usage
  1. **Run the Streamlit app** :
 ```bash 
 streamlit run app.py
 ```
- 2. **Using the webcam **: 
+ 2. **Navigation** :
+Navigate through the sidebar to learn more about the project and experience the functionality.  
+ 3. **Using the webcam**: 
 -   Start the webcam using the "Start Webcam" button.
 -   Perform ASL gestures in front of the camera.
 -   View the recognized text in the "Detected Text" section.
